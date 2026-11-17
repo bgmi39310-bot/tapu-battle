@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Tapu Battle — BGMI Edition (Cinematic PBR)</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<canvas id="g"></canvas>
+<div id="vg"></div>
+<div id="sc"></div>
+<canvas id="mm" width="240" height="240"></canvas>
+
+<div id="tophud">
+  <div class="statpill">ALIVE <span id="alv">11</span></div>
+  <div class="statpill">KILLS <span id="klc">0</span></div>
+</div>
+
+<!-- Settings Button & Dropdown -->
+<button id="gb" title="Settings">&#9881;</button>
+<div id="bt">
+  <button id="nb">&#128506; Naya Map</button>
+  <button id="tb">&#127794; Theme: Erangel</button>
+  <button id="db">&#127769; Raat Karo</button>
+  <button id="cb">&#127909; Camera: TPP</button>
+  <button id="sh">&#9728; Shadow: On</button>
+  <button id="gy">&#128241; Gyro: Off</button>
+  <button id="snb">&#127919; Sensitivity</button>
+  <button id="lb">&#128295; Customize Layout</button>
+  <div id="sz">
+    <button id="sp">Bada +</button>
+    <button id="sm">Chhota -</button>
+    <button id="rs">Reset</button>
+  </div>
+</div>
+
+<!-- BGMI Sensitivity Settings Modal -->
+<div id="sensModal">
+  <h3><span>&#127919; BGMI Sensitivity Settings</span><button id="snc" style="padding:3px 9px;font-size:11px">&#10005;</button></h3>
+  <div class="srow">
+    <label><span>Touch Look (No-Scope)</span><b id="sv_look">100%</b></label>
+    <input type="range" id="sl_look" min="20" max="300" value="100">
+  </div>
+  <div class="srow">
+    <label><span>Fire / ADS Sensitivity</span><b id="sv_fire">95%</b></label>
+    <input type="range" id="sl_fire" min="20" max="300" value="95">
+  </div>
+  <div class="srow">
+    <label><span>4x Scope Sensitivity</span><b id="sv_scope">65%</b></label>
+    <input type="range" id="sl_scope" min="20" max="300" value="65">
+  </div>
+  <div class="srow">
+    <label><span>Gyro Left-Right (Yaw)</span><b id="sv_gyaw">150%</b></label>
+    <input type="range" id="sl_gyaw" min="20" max="400" value="150">
+  </div>
+  <div class="srow">
+    <label><span>Gyro Up-Down (Pitch)</span><b id="sv_gpitch">130%</b></label>
+    <input type="range" id="sl_gpitch" min="20" max="400" value="130">
+  </div>
+  <div class="srow">
+    <label><span>Jiggle / Joystick Speed</span><b id="sv_jig">125%</b></label>
+    <input type="range" id="sl_jig" min="50" max="200" value="125">
+  </div>
+  <div class="srow">
+    <label><span>Gyro Axis Mode</span></label>
+    <select id="sl_gmode">
+      <option value="auto">Auto (Tilt + Pan Both Axes)</option>
+      <option value="portrait">Portrait Hold Mode</option>
+      <option value="landscape">Landscape Hold Mode</option>
+    </select>
+  </div>
+  <div class="spresets">
+    <button data-pr="low">Low</button>
+    <button data-pr="med">Medium</button>
+    <button data-pr="pro">BGMI Pro</button>
+    <button data-pr="rst">Reset</button>
+  </div>
+</div>
+
+<!-- Tactical Action Buttons (.rb) with Crisp Inline SVG Icons + Labels -->
+<button class="rb" id="fb">
+  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><line x1="12" y1="1" x2="12" y2="6" stroke="currentColor" stroke-width="2"/><line x1="12" y1="18" x2="12" y2="23" stroke="currentColor" stroke-width="2"/><line x1="1" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2"/><line x1="18" y1="12" x2="23" y2="12" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.2"/></svg>
+  <span>FIRE</span>
+</button>
+
+<button class="rb" id="jb2">
+  <svg viewBox="0 0 24 24"><path d="M12 3l5 5h-3v6h-4V8H7l5-5zm-6 15h12v3H6v-3z" stroke="none"/></svg>
+  <span id="jbl">Kudo</span>
+</button>
+
+<button class="rb" id="sb">
+  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 4v16M4 12h16" stroke="currentColor" stroke-width="1.6"/></svg>
+  <span>Scope</span>
+</button>
+
+<button class="rb" id="rb">
+  <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.95 7.95 0 0012 4V1L7 6l5 5V7c2.76 0 5 2.24 5 5a5 5 0 01-8.9 3.1l-1.45 1.45A7.98 7.98 0 0012 20c4.42 0 8-3.58 8-8 0-2.21-.9-4.21-2.35-5.65z" stroke="none"/></svg>
+  <span>Reload</span>
+</button>
+
+<button class="rb" id="vb">
+  <svg viewBox="0 0 24 24"><path d="M5 11l1.5-4.5h11L19 11m-1.5 5a1.5 1.5 0 01-1.5-1.5 1.5 1.5 0 011.5-1.5 1.5 1.5 0 011.5 1.5 1.5 1.5 0 01-1.5 1.5m-11 0A1.5 1.5 0 015 14.5 1.5 1.5 0 016.5 13 1.5 1.5 0 018 14.5 1.5 1.5 0 016.5 16M18.92 6c-.2-.58-.76-1-1.42-1h-11c-.66 0-1.22.42-1.42 1L3 12v8a1 1 0 001 1h1a1 1 0 001-1v-1h12v1a1 1 0 001 1h1a1 1 0 001-1v-8l-2.08-6z" stroke="none"/></svg>
+  <span id="vbl">Gaadi</span>
+</button>
+
+<button class="rb" id="cr">
+  <svg viewBox="0 0 24 24"><circle cx="13" cy="5" r="2.2" stroke="none"/><path d="M9 11l4-2 3 3-2 4h3v5h-2v-3h-3l-3-4-2 3H5v-3l4-3z" stroke="none"/></svg>
+  <span>Baitho</span>
+</button>
+
+<button class="rb" id="pn">
+  <svg viewBox="0 0 24 24"><circle cx="19" cy="14" r="2.2" stroke="none"/><path d="M2 17h13l3-3-3-2H6l-4 5z" stroke="none"/></svg>
+  <span>Leto</span>
+</button>
+
+<button class="rb" id="ey">
+  <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5a5 5 0 110-10 5 5 0 010 10zm0-8a3 3 0 100 6 3 3 0 000-6z" stroke="none"/></svg>
+  <span>Eye</span>
+</button>
+
+<button class="rb" id="pl">
+  <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6V6z" stroke="none"/><circle cx="17" cy="6" r="2" stroke="none"/></svg>
+  <span>Peek L</span>
+</button>
+
+<button class="rb" id="pr">
+  <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6V6z" stroke="none"/><circle cx="7" cy="6" r="2" stroke="none"/></svg>
+  <span>Peek R</span>
+</button>
+
+<button class="rb" id="bm">
+  <svg viewBox="0 0 24 24"><circle cx="11" cy="14" r="6" stroke="none"/><path d="M9 6h4v3H9V6zm4-2l3-2 1 1.5-2.5 1.5H13V4z" stroke="none"/></svg>
+  <span>Bomb</span>
+  <b class="bdg" id="bmc">0</b>
+</button>
+
+<button class="rb" id="ml">
+  <svg viewBox="0 0 24 24"><path d="M9 7h6v3l2 3v7a1 1 0 01-1 1H8a1 1 0 01-1-1v-7l2-3V7zm3-6c2 2 2 4 0 5-1-1-1-3 0-5z" stroke="none"/></svg>
+  <span>Molotov</span>
+  <b class="bdg" id="mlc">0</b>
+</button>
+
+<button class="rb" id="md">
+  <svg viewBox="0 0 24 24"><path d="M19 6h-3V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2H5a2 2 0 00-2 2v11a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2zm-9-2h4v2h-4V4zm6 11h-3v3h-2v-3H8v-2h3v-3h2v3h3v2z" stroke="none"/></svg>
+  <span>Medkit</span>
+  <b class="bdg" id="mdc">0</b>
+</button>
+
+<button class="rb" id="ib">
+  <svg viewBox="0 0 24 24"><path d="M17 6h-2V4a3 3 0 00-6 0v2H7a3 3 0 00-3 3v10a3 3 0 003 3h10a3 3 0 003-3V9a3 3 0 00-3-3zm-7-2a1 1 0 012 0v2h-2V4zm7 13H7v-3h10v3z" stroke="none"/></svg>
+  <span>Bag</span>
+</button>
+
+<button class="rb" id="pb">
+  <svg viewBox="0 0 24 24"><path d="M12 2L8 6h3v7h2V6h3l-4-4zm-7 14v4h14v-4h2v6H3v-6h2z" stroke="none"/></svg>
+  <span id="pbl">Uthao</span>
+</button>
+
+<!-- Dedicated Vehicle Steering & Pedals Overlay (#vc) -->
+<div id="vc">
+  <button class="dbtn" id="dl">&#9664;<span>Left</span></button>
+  <button class="dbtn" id="dr">&#9654;<span>Right</span></button>
+  <button class="dbtn" id="dg"><span style="font-size:20px">&#9650;</span><span>रेस</span></button>
+  <button class="dbtn" id="dbr"><span style="font-size:18px">&#9660;</span><span>ब्रेक</span></button>
+  <div id="spdhud">UAZ: 0 km/h</div>
+</div>
+
+<!-- Always-Visible Left Virtual Joystick -->
+<div id="js"><div id="jk"></div></div>
+
+<div id="iv"></div>
+<div id="td"></div>
+<div id="xh"></div>
+<div id="hm">&#10005;</div>
+<div id="cp">N 0&deg;</div>
+<div id="ms"></div>
+<div id="hud">
+  <div id="hb"><div id="hf"></div></div>
+  <span id="am"></span>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="js/01-core.js"></script>
+<script src="js/02-environment.js"></script>
+<script src="js/03-characters.js"></script>
+<script src="js/04-utils-combat.js"></script>
+<script src="js/05-inventory-physics.js"></script>
+<script src="js/06-loot-parachute.js"></script>
+<script src="js/07-map-builder.js"></script>
+<script src="js/08-controls-ui.js"></script>
+<script src="js/09-layout-editor.js"></script>
+<script src="js/10-game-loop.js"></script>
+
+</body>
+</html>
