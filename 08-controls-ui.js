@@ -59,7 +59,7 @@ function handleVehicleBtn(e){
 addEventListener('keydown',e=>{const k=e.key.toLowerCase();K[k]=1;if(k==='r')doReload();if(k==='q')togScope();if(k==='e')handleVehicleBtn(e);if(k==='g')use('G');if(k==='t')use('M');if(k==='h')use('h');if(k==='x'&&near)pick(near);if(k==='f'&&held)toss();if(k==='c')st=st===1?0:1;if(k==='z')st=st===2?0:2;});
 addEventListener('keyup',e=>K[e.key.toLowerCase()]=0);
 
-$('fb').onpointerdown=()=>{if(edit)return;if(held)toss();else{if(!P.gun&&!phase&&!drive)msg('M416 nahi hai! Ghar ya Chhat se uthao');firing=true}};$('fb').onpointerup=$('fb').onpointercancel=()=>firing=false;
+$('fb').onpointerdown=()=>{if(edit)return;if(held)toss();else{if(!P.gun&&P.sw<0&&!phase&&!drive)msg('M416 nahi hai! Ghar ya Chhat se uthao');firing=true}};$('fb').onpointerup=$('fb').onpointercancel=()=>firing=false;
 $('jb2').onpointerdown=()=>{if(!edit)jmpReq=true};$('sb').onpointerdown=()=>{if(!edit)togScope()};$('rb').onpointerdown=()=>{if(!edit)doReload()};$('vb').onpointerdown=handleVehicleBtn;
 $('nb').onclick=()=>build(seed=(seed*7+13)%9973);$('tb').onclick=e=>{th=(th+1)%3;e.target.textContent='🌲 Theme: '+TH[th].n;build(seed)};$('db').onclick=e=>{night=!night;e.target.textContent=night?'☀ Din Karo':'🌙 Raat Karo'};
 $('cb').onclick=e=>{cam3=!cam3;e.target.textContent='🎥 Camera: '+(cam3?'TPP':'FPP')};$('sh').onclick=e=>{sun.castShadow=!sun.castShadow;e.target.textContent='☀ Shadow: '+(sun.castShadow?'On':'Off')};
