@@ -1,10 +1,11 @@
 // Talwar (melee) - SIRF main player ke liye. Dushman talwar nahi chalate.
 // Talwar button dabao: bandook -> talwar 1 -> talwar 2 ... -> wapas bandook. FIRE = vaar.
 P.sw=-1;
-const SW={protos:[],names:[],fp:null,tp:null,t:0,hit:false,DUR:0.45,REACH:3.1,DMG:60};
+const SW={protos:[],names:[],fp:null,tp:null,t:0,hit:false,DUR:0.45,REACH:3.7,DMG:60};
 const swEase=x=>x*x*(3-2*x);
 function makeSwordObj(proto,scale){
-  const G=proto.clone(true),box=new THREE.Box3().setFromObject(G),c=box.getCenter(new THREE.Vector3());
+  const G=proto.clone(true);G.position.set(0,0,0);G.rotation.set(0,0,0);G.scale.set(1,1,1);G.updateMatrixWorld(true);
+  const box=new THREE.Box3().setFromObject(G),c=box.getCenter(new THREE.Vector3());
   G.position.set(-c.x,-(box.max.y-1.5),-c.z);            // mooth (grip) origin par
   const W=new THREE.Group();W.rotation.z=Math.PI;W.add(G); // model ulta bana tha: nok neeche -> nok upar
   const H=new THREE.Group();H.add(W);H.scale.setScalar(scale);
@@ -15,7 +16,7 @@ function setSword(i){
   if(SW.fp){cam.remove(SW.fp);SW.fp=null}
   if(SW.tp){pl.el2.remove(SW.tp);SW.tp=null}
   P.sw=i;if(i<0)return;
-  SW.fp=makeSwordObj(SW.protos[i],0.075);cam.add(SW.fp);
+  SW.fp=makeSwordObj(SW.protos[i],0.055);cam.add(SW.fp);
   SW.tp=makeSwordObj(SW.protos[i],0.085);SW.tp.position.set(0,-0.34,0);SW.tp.rotation.x=Math.PI+0.3;pl.el2.add(SW.tp);
 }
 function cycleSword(){
@@ -36,9 +37,9 @@ function slashDamage(){
     if(d>SW.REACH||Math.abs(e.y-P.y)>2.2)continue;
     if(d>0.6&&(dx*fx+dz*fz)/d<0.3)continue;        // saamne ~70 degree ke andar
     if(!hasLOS(e))continue;                         // deewar ke aar-paar nahi
-    e.hp-=SW.DMG;e.see=true;e.lt=1.2;any=true;
-    if(e.hp<=0)kill(e);
+    dmgEnemy(e,SW.DMG);any=true;
   }
+  if(NET.mode==='pvp'&&NET.role!=='solo')for(const id in NET.players){const r=NET.players[id];if(!r.av||r.dead||!r.t)continue;const dx=r.ax-P.x,dz=r.az-P.z,d=Math.hypot(dx,dz);if(d<=SW.REACH&&(d<0.6||(dx*fx+dz*fz)/d>=0.3)){netPlayerHit(id,SW.DMG*0.6);any=true}}
   if(any){shake=Math.max(shake,0.5);snd(180,0.1,0.07,'sawtooth');const h=$('hm');h.style.color='#ff1744';h.style.opacity=1;setTimeout(()=>h.style.opacity=0,120)}
 }
 function meleeUpdate(dt,fpp){
@@ -52,7 +53,7 @@ function meleeUpdate(dt,fpp){
   }
   if(SW.fp&&on&&fpp){      // pehle-person ka vaar
     const s=SW.t>0?1-SW.t/SW.DUR:0,w=s<0.7?swEase(s/0.7):1-swEase((s-0.7)/0.3),f=SW.fp;
-    f.position.set(0.28-0.38*w,-0.62+0.1*w,-0.7-0.25*Math.sin(w*Math.PI));
+    f.position.set(0.3-0.4*w,-0.72+0.12*w,-0.8-0.25*Math.sin(w*Math.PI));
     f.rotation.set(-0.5-0.8*Math.sin(w*Math.PI),0.2*w,-0.3+1.9*w);
   }
 }
