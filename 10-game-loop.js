@@ -92,7 +92,8 @@ function step(dt){
   // fire / reload
   fireT-=dt;
   if(reload>0){reload-=dt;if(reload<=0){const n=Math.min(30-P.ammo,P.res);P.ammo+=n;P.res-=n;msg('Reload ho gaya')}}
-  if(firing&&!held&&P.gun&&!drive&&!phase&&!P.dead&&!P.climb&&fireT<=0&&reload<=0){
+  if(firing&&!held&&P.sw>=0&&!drive&&!phase&&!P.dead&&!P.climb)startSlash();
+  if(firing&&!held&&P.gun&&P.sw<0&&!drive&&!phase&&!P.dead&&!P.climb&&fireT<=0&&reload<=0){
     if(P.ammo>0)shoot();else if(P.res>0)doReload();else{fireT=0.5;snd(150,0.05,0.04);msg('Ammo khatam!')}
   }
   rec=Math.max(0,rec-dt*1.6);mFlashT=Math.max(0,mFlashT-dt);
@@ -112,7 +113,7 @@ function step(dt){
     }
     if(hmap(e.x+mx*1.5,e.z+mz*1.5)<-0.5){spd=0;e.wt=0}
     moveWithSubsteps(e,mx*spd*dt,mz*spd*dt,0.42,1.55);e.y=gnd(e.x,e.z,e.y,e.y);e.g.position.set(e.x,e.y,e.z);
-    if(e.mx)e.mx.update(dt*(spd>0.1?1.6:0.5));e.wp=(e.wp||0)+spd*dt*2.4;const sw=Math.sin(e.wp)*0.7*Math.min(1,spd/3);e.c.l1.rotation.x=sw;e.c.l2.rotation.x=-sw;
+    if(e.mx)e.mx.update(dt*(spd>0.1?1.6:0.5));if(e.ik){e.g.updateMatrixWorld(true);e.ik()}e.wp=(e.wp||0)+spd*dt*2.4;const sw=Math.sin(e.wp)*0.7*Math.min(1,spd/3);e.c.l1.rotation.x=sw;e.c.l2.rotation.x=-sw;
   }
   // grenades, molotov, explosions, fire
   for(let i=PJ.length-1;i>=0;i--){
@@ -135,10 +136,10 @@ function step(dt){
   // player model
   const mvl=Math.hypot(P.vx,P.vz),stride=Math.min(1,mvl/6);P.wph+=mvl*dt*2.2;
   const fpp=(!cam3||scope)&&!phase&&!drive;
-  pl.g.visible=!drive&&!fpp&&phase!==1;gv.visible=fpp&&P.gun;
+  pl.g.visible=!drive&&!fpp&&phase!==1;gv.visible=fpp&&P.gun&&P.sw<0;pl.rf.visible=!!P.gun&&P.sw<0;meleeUpdate(dt,fpp);
   pl.g.position.set(P.x,P.y+(st===2?0.18:0),P.z);{const ty=(firing||scope||phase||mvl<0.4)?P.yaw:Math.atan2(-P.vx,-P.vz);bY+=Math.atan2(Math.sin(ty-bY),Math.cos(ty-bY))*Math.min(1,dt*12)}pl.g.rotation.set(st===2?-1.35:0,bY,0);pl.g.scale.y=0.78*(st===1?0.82:1);
   const sw=Math.sin(P.wph)*0.8*stride;pl.l1.rotation.x=sw;pl.l2.rotation.x=-sw;
-  pl.poseArms(P.gun&&!drive,P.wph,stride,spr,P.pitch,rec*0.5);
+  if(P.sw>=0&&!drive&&!phase)meleePose(stride,spr);else{pl.torso.rotation.y=0;pl.poseArms(P.gun&&!drive,P.wph,stride,spr,P.pitch,rec*0.5)}
   pl.mFl.visible=mFlashT>0&&!fpp;gv.mFl.visible=mFlashT>0&&fpp;
   PLM.visible=phase===1;PLM.position.set(PL.x,PL.y,PL.z);props.forEach(p=>p.rotation.z+=dt*40);
   CH.visible=phase===3;CH.position.set(P.x,P.y,P.z);
@@ -162,7 +163,7 @@ function step(dt){
   fovT=scope?18:70;if(Math.abs(cam.fov-fovT)>0.05){cam.fov=lerp(cam.fov,fovT,Math.min(1,dt*10));cam.updateProjectionMatrix()}
   // HUD
   $('hf').style.width=P.hp+'%';$('hf').style.background=P.hp>55?'linear-gradient(90deg,#43a047,#76ff03)':P.hp>25?'linear-gradient(90deg,#f9a825,#ffee58)':'linear-gradient(90deg,#c62828,#ff5252)';
-  $('am').textContent=(P.gun?'M416  '+P.ammo+' / '+P.res+(reload>0?'  ↻':''):'Haath khali — M416 dhundo')+(held?'  |  '+LN[held]+' ready':'');
+  $('am').textContent=(P.sw>=0?'Talwar: '+SW.names[P.sw]:P.gun?'M416  '+P.ammo+' / '+P.res+(reload>0?'  ↻':''):'Haath khali — M416 dhundo')+(held?'  |  '+LN[held]+' ready':'');
   $('alv').textContent=EN.length+1;$('klc').textContent=P.kills;
   const hdg=((-P.yaw*180/Math.PI)%360+360)%360;$('cp').innerHTML=DIRS[Math.round(hdg/45)%8]+' '+Math.round(hdg)+'&deg;';
   prev();
