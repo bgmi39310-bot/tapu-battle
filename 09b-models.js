@@ -21,11 +21,11 @@ function applyEnemyModel(e){
   e.glb=pivot;
 }
 function loadModels(){
-  if(!THREE.GLTFLoader||!THREE.SkeletonUtils){console.warn('GLTFLoader nahi mila');return}
+  if(!THREE.GLTFLoader||!THREE.SkeletonUtils){console.warn('GLTFLoader nahi mila');setTimeout(()=>msg('Model: GLTFLoader nahi mila (index.html update karo / internet check karo)'),2500);return}
   const L=new THREE.GLTFLoader();
   L.load(MODEL_FILES.enemy,g=>{
     MODELS.enemy=g;g.scene.traverse(o=>{if(o.isMesh)MODEL_MATS.push(o.material)});
-    EN.forEach(applyEnemyModel);
-  },undefined,err=>console.warn('Model load fail, procedural enemy chalega:',err));
+    try{EN.forEach(applyEnemyModel);msg('Model load ho gaya: '+MODEL_FILES.enemy)}catch(err){console.error(err);msg('Model error: '+err.message)}
+  },undefined,err=>{console.warn('Model load fail:',err);msg('Model file nahi mili: '+MODEL_FILES.enemy+' (repo me upload karo)')});
 }
 loadModels();
