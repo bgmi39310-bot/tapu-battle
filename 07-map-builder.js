@@ -82,7 +82,8 @@ function build(sd){
     const W=big?24:16,D=big?18:12,t=0.44,hh=big?7.6:3.8,dw=3;
     let maxT=rawG0,minT=rawG0;
     for(let ix=-2;ix<=2;ix++){for(let iz=-2;iz<=2;iz++){const ty=H(cx+ix*(W*0.28),cz+iz*(D*0.28));if(ty>maxT)maxT=ty;if(ty<minT)minT=ty;}}
-    const g0=Math.max(maxT+0.18,1.8),roofTopY=g0+hh+0.45;
+    if(maxT-minT>1.8)return;   // dhalaan wali jagah par ghar nahi (unche chabutre se bachne ke liye)
+    const g0=maxT+0.15,roofTopY=g0+hh+0.45;
     const w=new THREE.Color().setHSL(0.08+r()*0.08,0.25,0.78),yy=g0+hh/2,sw=(W-dw)/2;
 
     const fndH=Math.max(8,g0-minT+3);
