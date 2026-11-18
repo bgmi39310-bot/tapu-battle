@@ -19,7 +19,7 @@ function shoot(){
   rc.setFromCamera({x:(Math.random()-.5)*sp*10,y:(Math.random()-.5)*sp*10},cam);rc.far=300;
   const o=rc.ray.origin.clone(),d=rc.ray.direction.clone(),hits=rc.intersectObjects([...EN.map(e=>e.g),...WM],true);
   let dist=300,tgt=null,hd=false;
-  if(hits.length){dist=hits[0].distance;const u=hits[0].object.userData;if(u.e){tgt=u.e;hd=!!u.hd}}
+  if(hits.length){dist=hits[0].distance;const u=hits[0].object.userData;if(u.e){tgt=u.e;hd=!!u.hd||(!!u.glb&&hits[0].point.y-u.e.y>1.45)}}
   const tr=obsT(o,d,dist,false);if(tr<dist){dist=tr;tgt=null}
   if(tgt){const bh=bxHit(o,d,dist);if(bh>=0){dist=bh;tgt=null}}
   const end=o.clone().addScaledVector(d,dist),mz=(cam3&&!scope?pl.mFl:gv.mFl).getWorldPosition(new THREE.Vector3());
@@ -43,7 +43,7 @@ function step(dt){
   const kx=K_('d')+K_('arrowright')-K_('a')-K_('arrowleft'),ky=K_('s')+K_('arrowdown')-K_('w')-K_('arrowup');
   const fx=clamp(mv.x+kx,-1,1),fy=clamp(mv.y+ky,-1,1);
   // day/night
-  nT=lerp(nT,night?1:0,Math.min(1,dt*1.5));
+  nT=lerp(nT,night?1:0,Math.min(1,dt*1.5));MODEL_MATS.forEach(m=>m.color&&m.color.setScalar(lerp(1,0.35,nT)));
   cS.set(skyD).lerp(cB,nT);scene.background=cS;scene.fog.color.copy(cS);ren.setClearColor(cS,1);
   hemi.intensity=lerp(1.1,0.3,nT);sun.intensity=lerp(1.2,0.06,nT);
   sun.position.set(P.x+85,P.y+140,P.z+45);sun.target.position.set(P.x,P.y,P.z);
@@ -112,7 +112,7 @@ function step(dt){
     }
     if(hmap(e.x+mx*1.5,e.z+mz*1.5)<-0.5){spd=0;e.wt=0}
     moveWithSubsteps(e,mx*spd*dt,mz*spd*dt,0.42,1.55);e.y=gnd(e.x,e.z,e.y,e.y);e.g.position.set(e.x,e.y,e.z);
-    e.wp=(e.wp||0)+spd*dt*2.4;const sw=Math.sin(e.wp)*0.7*Math.min(1,spd/3);e.c.l1.rotation.x=sw;e.c.l2.rotation.x=-sw;
+    if(e.mx)e.mx.update(dt*(spd>0.1?1.6:0.5));e.wp=(e.wp||0)+spd*dt*2.4;const sw=Math.sin(e.wp)*0.7*Math.min(1,spd/3);e.c.l1.rotation.x=sw;e.c.l2.rotation.x=-sw;
   }
   // grenades, molotov, explosions, fire
   for(let i=PJ.length-1;i>=0;i--){
