@@ -263,3 +263,23 @@ button{
     linear-gradient(#ff1744,#ff1744) 50% 50%/1.5px 26vmin no-repeat,
     radial-gradient(circle at 50% 50%,transparent 0,transparent 30vmin,#05080c 31vmin);
 }
+
+/* ===== Lobby ===== */
+#lobby{position:fixed;inset:0;z-index:200;display:flex;align-items:center;padding:0 4vw;overflow:auto;
+  background:linear-gradient(90deg,rgba(6,12,20,.94) 0%,rgba(6,12,20,.7) 45%,rgba(6,12,20,0) 100%);color:#fff;font-family:system-ui,sans-serif}
+.lbcard{width:min(420px,92vw);padding:18px 0}
+.lbcard h1{margin:0;font-size:34px;letter-spacing:1px;color:#ffd54f;text-shadow:0 2px 8px #000}
+.lbsub{margin:2px 0 16px;color:#cfd8dc;font-weight:700;letter-spacing:3px;font-size:12px}
+.lbcard h3{margin:14px 0 6px;font-size:13px;color:#ffcc80;text-transform:uppercase;letter-spacing:1.5px}
+#lbMaps{display:flex;gap:8px;flex-wrap:wrap}
+.lbm,.lbt{display:flex;align-items:center;gap:6px;padding:11px 14px;border-radius:12px;border:2px solid rgba(255,255,255,.25);background:rgba(20,30,42,.85);color:#fff;font-size:15px;font-weight:800}
+.lbm.on,.lbt.on{border-color:#ffd54f;background:rgba(255,193,7,.22)}
+.lbs{width:14px;height:14px;border-radius:50%;border:1px solid #0006}
+.lbrow{display:flex;gap:8px;flex-wrap:wrap}
+#lbStart{margin-top:18px;width:100%;padding:16px;border-radius:14px;border:3px solid #ffd54f;background:linear-gradient(#ff5252,#c62828);color:#fff;font-size:22px;font-weight:900;letter-spacing:2px;box-shadow:0 0 18px rgba(255,82,82,.55)}
+#lbStart:disabled{opacity:.6;filter:grayscale(.5)}
+.lk{opacity:.45;pointer-events:none}
+.lbjoin{margin-top:8px}
+#lbCode{width:130px;padding:11px;border-radius:12px;border:2px solid rgba(255,255,255,.3);background:rgba(20,30,42,.85);color:#fff;font-size:17px;font-weight:800;letter-spacing:3px;text-transform:uppercase;text-align:center}
+#lbRoomInfo{margin-top:10px;font-size:14px;line-height:1.6;color:#e0e0e0}
+.lbcode{font-size:26px;color:#ffd54f;letter-spacing:4px}
