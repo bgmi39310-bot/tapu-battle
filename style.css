@@ -102,6 +102,7 @@ button{
 }
 
 #sb{right:18px;bottom:calc(184px + env(safe-area-inset-bottom,0px));width:58px;height:58px}
+#sw{right:150px;bottom:calc(184px + env(safe-area-inset-bottom,0px));width:58px;height:58px}
 #rb{right:84px;bottom:calc(184px + env(safe-area-inset-bottom,0px));width:58px;height:58px}
 
 #bm,#ml,#md,#ib{width:52px;height:52px;bottom:calc(252px + env(safe-area-inset-bottom,0px))}
