@@ -11,7 +11,7 @@ function mkNoise(r){
 }
 
 function col(o,rad,h=1.55){
-  const oy=o.y||0,botY=oy+0.36,topY=oy+h;
+  const oy=o.y||0,botY=oy+0.66,topY=oy+h;   // 0.66 = dehleej/chhote step par apne aap chadh jao
   for(let iter=0;iter<2;iter++){
     for(const[a,b,r,hq,sf]of OB){
       if(sf)continue;
@@ -59,21 +59,29 @@ function msg(t){$('ms').textContent=t;$('ms').style.opacity=1;clearTimeout(msg.t
 function tracer(a,b,c){const g=new THREE.BufferGeometry().setFromPoints([a,b]),l=new THREE.Line(g,new THREE.LineBasicMaterial({color:c}));scene.add(l);setTimeout(()=>{scene.remove(l);g.dispose()},75)}
 
 const LN={h:'Medkit',a:'5.56mm Ammo',H:'Helmet Lv.3',B:'Backpack Lv.2',G:'Frag Grenade',M:'Molotov',W:'M416 Rifle',Z:'4x Scope'};
+let NID=0;
 function spawnEn(){
-  const e={g:null,x:0,z:0,y:0,hp:100,cd:1,lt:0,see:false,tx:0,tz:0,wt:0,ph:0};let t=0;
+  const e={nid:NID++,g:null,x:0,z:0,y:0,hp:100,cd:1,lt:0,see:false,tx:0,tz:0,wt:0,ph:0};let t=0;
   do{e.x=(Math.random()-.5)*S*.78;e.z=(Math.random()-.5)*S*.78}while((hmap(e.x,e.z)<1.5||Math.hypot(e.x-P.x,e.z-P.z)<75)&&t++<300);
   e.y=Math.max(hmap(e.x,e.z),0);
   const c=mkChar(0x8e2822,true);e.c=c;e.g=c.g;
   c.g.traverse(o=>{if(o.isMesh)o.userData.e=e});c.hd.traverse(o=>{if(o.isMesh)o.userData.hd=1});c.hm.traverse(o=>{if(o.isMesh)o.userData.hd=1});
   c.g.position.set(e.x,e.y,e.z);scene.add(e.g);EN.push(e);
   if(typeof applyEnemyModel==='function')applyEnemyModel(e);
+  if(typeof netEnemySpawned==='function')netEnemySpawned(e);
 }
-function kill(e,roadkill=false){
+// Dushman ko damage: solo/host par seedha, client par host ko bhejo (host hi faisla karta hai)
+function dmgEnemy(e,a,by='host',rk=false){
+  if(NET.role==='client'){netDmg(e,a);return}
+  e.hp-=a;e.see=true;e.lt=1.2;if(e.hp<=0)kill(e,rk,by);
+}
+function kill(e,roadkill=false,by='host'){
   const idx=EN.indexOf(e);if(idx===-1)return;
-  scene.remove(e.g);EN.splice(idx,1);P.kills++;
-  addLoot(e.x,e.y+0.55,e.z,['h','a','H','B','G','M','h','a','W','Z','a'][Math.floor(Math.random()*11)]);
-  msg((roadkill?'Gaadi se kuchal diya! ':'Dushman khatam! ')+'Kills: '+P.kills);
-  setTimeout(()=>{if(EN.length<10)spawnEn()},7500);
+  scene.remove(e.g);EN.splice(idx,1);if(by==='host')P.kills++;
+  const lt=['h','a','H','B','G','M','h','a','W','Z','a'][Math.floor(Math.random()*11)],lo=addLoot(e.x,e.y+0.55,e.z,lt);
+  if(by==='host')msg((roadkill?'Gaadi se kuchal diya! ':'Dushman khatam! ')+'Kills: '+P.kills);
+  if(typeof netEnemyKilled==='function')netEnemyKilled(e,lt,lo.id,by,roadkill);
+  setTimeout(()=>{if(EN.length<10&&NET.role!=='client')spawnEn()},7500);
 }
 function hurt(a){
   if(P.dead)return;if(drive)a*=0.25;if(P.helm)a*=0.6;
