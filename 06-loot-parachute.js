@@ -15,7 +15,8 @@ function lootMesh(t){
   const ring=new THREE.Mesh(new THREE.RingGeometry(.32,.42,20),new THREE.MeshBasicMaterial({color:0xffca28,side:THREE.DoubleSide,transparent:true,opacity:0.65}));
   ring.rotation.x=-Math.PI/2;ring.position.y=-0.25;g.add(ring);g.scale.setScalar(1.55);return g;
 }
-function addLoot(x,y,z,t){const m=lootMesh(t);m.position.set(x,y,z);grp.add(m);LT.push({m,t})}
+let LID=0;
+function addLoot(x,y,z,t,id){const m=lootMesh(t);m.position.set(x,y,z);grp.add(m);const o={m,t,id:id!==undefined?id:LID++};LT.push(o);return o}
 
 const PLM=new THREE.Group(),props=[];
 {
