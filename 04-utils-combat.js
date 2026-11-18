@@ -66,6 +66,7 @@ function spawnEn(){
   const c=mkChar(0x8e2822,true);e.c=c;e.g=c.g;
   c.g.traverse(o=>{if(o.isMesh)o.userData.e=e});c.hd.traverse(o=>{if(o.isMesh)o.userData.hd=1});c.hm.traverse(o=>{if(o.isMesh)o.userData.hd=1});
   c.g.position.set(e.x,e.y,e.z);scene.add(e.g);EN.push(e);
+  if(typeof applyEnemyModel==='function')applyEnemyModel(e);
 }
 function kill(e,roadkill=false){
   const idx=EN.indexOf(e);if(idx===-1)return;
