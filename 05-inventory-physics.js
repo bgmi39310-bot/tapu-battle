@@ -13,7 +13,7 @@ function pick(l){
   else if(t==='B'){if(P.bag)return msg('Backpack pehle se hai');P.bag=true}
   else if(t==='a'){if(P.res>=cap('a'))return msg('Ammo bag full');P.res=Math.min(cap('a'),P.res+30)}
   else{if(P.inv[t]>=cap(t))return msg('Bag full');P.inv[t]++}
-  snd(620,0.08,0.06,'sine');grp.remove(l.m);LT.splice(LT.indexOf(l),1);msg(LN[t]+' uthaya');inv();
+  snd(620,0.08,0.06,'sine');grp.remove(l.m);LT.splice(LT.indexOf(l),1);msg(LN[t]+' uthaya');inv();if(typeof netPick==='function')netPick(l.id);
 }
 function drop(t){
   if(t==='W'){if(!P.gun)return;P.gun=false}
@@ -41,7 +41,7 @@ function boom(p){
   if(p.t==='G'){
     const m=new THREE.Mesh(new THREE.SphereGeometry(1,16,12),new THREE.MeshBasicMaterial({color:0xff8f00,transparent:true,opacity:0.88}));
     m.position.set(x,y,z);scene.add(m);FX.push({m,t:0.45});snd(65,0.6,0.35,'sawtooth');
-    for(const e of[...EN]){const d=Math.hypot(e.x-x,e.z-z);if(d<14){e.hp-=(1-d/14)*240+30;if(e.hp<=0)kill(e)}}
+    for(const e of[...EN]){const d=Math.hypot(e.x-x,e.z-z);if(d<14)dmgEnemy(e,(1-d/14)*240+30)}
     const d=Math.hypot(P.x-x,P.z-z);if(d<14)hurt((1-d/14)*130+10);if(d<60)shake=Math.max(shake,1.3-d/60);
   }else{
     const m=new THREE.Mesh(new THREE.CircleGeometry(5.5,20),new THREE.MeshBasicMaterial({color:0xff3d00,transparent:true,opacity:0.65}));
