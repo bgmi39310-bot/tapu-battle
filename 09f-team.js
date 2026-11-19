@@ -18,8 +18,8 @@ const TEAM={squad:true,follow:false,wp:null,t:0,pph:0,mk:{},open:false};
 #airBar button{padding:10px 14px;border-radius:14px;border:2px solid rgba(255,255,255,.5);background:rgba(20,30,42,.88);color:#fff;font:800 14px system-ui,sans-serif;pointer-events:auto}
 #airBar button.on{border-color:#76ff03;background:rgba(56,142,60,.5)}
 #bigmap{position:fixed;top:0;left:0;right:0;bottom:0;z-index:150;display:none;background:rgba(0,0,0,.84);flex-direction:column;align-items:center;justify-content:center;pointer-events:auto;touch-action:none}
-#bigmap canvas{width:min(80vh,92vw);height:min(80vh,92vw);border:3px solid #ffd54f;border-radius:10px;background:#123}
-#bigmap .bmTop{display:flex;justify-content:space-between;align-items:center;gap:10px;width:min(80vh,92vw);color:#fff;font:800 14px system-ui,sans-serif;margin-bottom:8px}
+#bigmap canvas{width:min(70vh,92vw);height:min(70vh,92vw);width:min(70dvh,92vw);height:min(70dvh,92vw);border:3px solid #ffd54f;border-radius:10px;background:#123}
+#bigmap .bmTop{display:flex;justify-content:space-between;align-items:center;gap:10px;width:min(70vh,92vw);width:min(70dvh,92vw);color:#fff;font:800 14px system-ui,sans-serif;margin-bottom:8px}
 #bigmap button{padding:8px 12px;border-radius:10px;border:2px solid rgba(255,255,255,.5);background:rgba(20,30,42,.9);color:#fff;font:800 13px system-ui,sans-serif;margin-left:6px}`;
   document.head.appendChild(st);
   document.body.insertAdjacentHTML('beforeend',
@@ -90,7 +90,8 @@ function teamRecv(id,m){
 function sendTeam(o){const n=NT();if(n.role==='host')netBc(o);else if(n.role==='client')netToHost(o)}
 // ---- bada map ----
 function setWp(x,z){TEAM.wp=x==null?null:{x,z};sendTeam({t:'wp',x,z});if(x!=null)msg('\uD83D\uDCCD Marker laga diya')}
-function drawMap(){
+function drawMap(){try{drawMap0()}catch(err){console.error(err);const g=tel('bmc').getContext('2d');g.fillStyle='#123';g.fillRect(0,0,640,640);g.fillStyle='#fff';g.font='bold 24px sans-serif';g.fillText('Map error: '+err.message,20,320)}}
+function drawMap0(){
   const c=tel('bmc'),g=c.getContext('2d'),W=640,X=v=>(v/S+.5)*W;
   g.clearRect(0,0,W,W);g.imageSmoothingEnabled=true;
   if(mm._bg)g.drawImage(mm._bg,0,0,W,W);else{g.fillStyle='#2e5';g.fillRect(0,0,W,W)}
@@ -111,6 +112,7 @@ function openMap(){TEAM.open=true;tel('bigmap').style.display='flex';drawMap();c
 function closeMap(){TEAM.open=false;tel('bigmap').style.display='none';clearInterval(TEAM.iv)}
 tel('bmX').onclick=closeMap;tel('bmClr').onclick=()=>setWp(null,null);
 tel('bmc').addEventListener('pointerdown',e=>{const r=e.currentTarget.getBoundingClientRect();setWp(((e.clientX-r.left)/r.width-.5)*S,((e.clientY-r.top)/r.height-.5)*S);drawMap()});
+tel('mapBtn').onclick=()=>{if(started)TEAM.open?closeMap():openMap()};tel('mapBtn').addEventListener('pointerdown',e=>e.stopPropagation());
 mm.style.pointerEvents='auto';mm.addEventListener('pointerdown',e=>e.stopPropagation());mm.addEventListener('click',()=>{if(started)openMap()});
 addEventListener('keydown',e=>{if(e.key==='m'||e.key==='M')TEAM.open?closeMap():(started&&openMap())});
 // ---- har frame ----

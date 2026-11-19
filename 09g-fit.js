@@ -16,9 +16,9 @@
     return o;
   }
   function fit(){
-    const W=innerWidth,H=innerHeight;
+    const vv=window.visualViewport,W=vv?vv.width:innerWidth,H=vv?vv.height:innerHeight;
     document.getElementById('rotHint').style.display=H>W?'flex':'none';
-    const s=Math.max(0.5,Math.min(1,H/760,W/1300));
+    const s=Math.max(0.62,Math.min(1,H/760,W/1300));
     document.querySelectorAll('.rb,.dbtn').forEach(b=>{
       if(!b.dataset.fo){
         if(b.style.left||b.style.top){b.dataset.fo='custom'}   // aapne khud jagah badli hai
@@ -35,5 +35,5 @@
     });
   }
   addEventListener('load',()=>{fit();setTimeout(fit,400)});
-  addEventListener('resize',fit);addEventListener('orientationchange',()=>setTimeout(fit,250));
+  addEventListener('resize',fit);if(window.visualViewport)visualViewport.addEventListener('resize',fit);addEventListener('orientationchange',()=>setTimeout(fit,250));
 })();

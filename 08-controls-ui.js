@@ -1,11 +1,21 @@
 // Touch/keyboard controls, buttons, gyro, settings UI
-function size(){const w=innerWidth,h=innerHeight;ren.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix()}
-addEventListener('resize',size);size();
+function size(){const vv=window.visualViewport,w=Math.round(vv?vv.width:innerWidth),h=Math.round(vv?vv.height:innerHeight);ren.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix()}
+addEventListener('resize',size);if(window.visualViewport)visualViewport.addEventListener('resize',size);size();
+// typing karte waqt (room code) game ke shortcut na chalein
+addEventListener('keydown',e=>{if(/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName))e.stopImmediatePropagation()},true);
+addEventListener('keyup',e=>{if(/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName))e.stopImmediatePropagation()},true);
 
 const js=$('js'),jk=$('jk'),tc={};
 let jsBase=null;
 function resetJoystickPos(){if(jsBase){js.style.left=jsBase.x+'px';js.style.top=jsBase.y+'px';js.style.bottom='auto'}else{js.style.left='85px';js.style.top='';js.style.bottom='calc(95px + env(safe-area-inset-bottom,0px))'}js.classList.remove('sprint');jk.style.transform='';}
+cv.addEventListener('contextmenu',e=>e.preventDefault());
 cv.addEventListener('pointerdown',e=>{
+  if(e.pointerType==='mouse'){   // desktop: pehla click mouse pakadta hai, phir click=FIRE, right click=SCOPE
+    if(typeof started!=='undefined'&&!started)return;
+    if(document.pointerLockElement!==cv){try{cv.requestPointerLock()}catch(x){}return}
+    if(e.button===2)togScope();else if(e.button===0){if(held)toss();else{if(!P.gun&&P.sw<0&&!phase&&!drive)msg('M416 nahi hai! Ghar ya Chhat se uthao');firing=true}}
+    return;
+  }
   cv.setPointerCapture(e.pointerId);const mode=(e.pointerType==='mouse'||drive)?'look':(e.clientX<innerWidth*0.48?'move':'look');
   tc[e.pointerId]={mode,sx:e.clientX,sy:e.clientY,lx:e.clientX,ly:e.clientY};
   if(mode==='move'){js.style.bottom='auto';js.style.left=e.clientX+'px';js.style.top=e.clientY+'px';}
@@ -25,6 +35,13 @@ cv.addEventListener('pointermove',e=>{
     mv={x:Math.max(-1,Math.min(1,(dx/maxR)*jigMul)),y:Math.max(-1,Math.min(1,(dy/maxR)*jigMul))};
     js.classList.toggle('sprint',Math.hypot(dx,dy)/maxR>0.85);jk.style.transform=`translate(${dx}px,${dy}px)`;
   }
+});
+addEventListener('pointerup',e=>{if(e.pointerType==='mouse'&&e.button===0)firing=false});
+addEventListener('mousemove',e=>{
+  if(document.pointerLockElement!==cv)return;
+  const k=(scope?0.0022:0.0052)*(scope?SENS.scope/100:(firing?SENS.fire/100:SENS.look/100))*0.6,ddx=e.movementX*k,ddy=e.movementY*k;
+  if(eyeOn){FY=Math.max(-Math.PI,Math.min(Math.PI,FY-ddx*1.4));FP=Math.max(-1.0,Math.min(1.0,FP-ddy*1.4))}
+  else{P.yaw-=ddx;P.pitch=Math.max(-1.2,Math.min(1.2,P.pitch-ddy))}
 });
 const up=e=>{const t=tc[e.pointerId];if(t&&t.mode==='move'){mv={x:0,y:0};resetJoystickPos()}delete tc[e.pointerId];};
 cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
@@ -56,11 +73,13 @@ function handleVehicleBtn(e){
   }
 }
 
-addEventListener('keydown',e=>{const k=e.key.toLowerCase();K[k]=1;if(k==='r')doReload();if(k==='q')togScope();if(k==='e')handleVehicleBtn(e);if(k==='g')use('G');if(k==='t')use('M');if(k==='h')use('h');if(k==='x'&&near)pick(near);if(k==='f'&&held)toss();if(k==='c')st=st===1?0:1;if(k==='z')st=st===2?0:2;});
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();K[k]=1;if(e.code==='Space'){e.preventDefault();if(!edit)jmpReq=true}if(k==='i'){const el=$('iv');el.style.display=el.style.display==='block'?'none':'block';inv()}if(k==='r')doReload();if(k==='q')togScope();if(k==='e')handleVehicleBtn(e);if(k==='g')use('G');if(k==='t')use('M');if(k==='h')use('h');if(k==='x'&&near)pick(near);if(k==='f'&&held)toss();if(k==='c')st=st===1?0:1;if(k==='z')st=st===2?0:2;});
 addEventListener('keyup',e=>K[e.key.toLowerCase()]=0);
 
 $('fb').onpointerdown=()=>{if(edit)return;if(held)toss();else{if(!P.gun&&P.sw<0&&!phase&&!drive)msg('M416 nahi hai! Ghar ya Chhat se uthao');firing=true}};$('fb').onpointerup=$('fb').onpointercancel=()=>firing=false;
 $('jb2').onpointerdown=()=>{if(!edit)jmpReq=true};$('sb').onpointerdown=()=>{if(!edit)togScope()};$('rb').onpointerdown=()=>{if(!edit)doReload()};$('vb').onpointerdown=handleVehicleBtn;
+function togFS(){try{if(document.fullscreenElement){document.exitFullscreen()}else{document.documentElement.requestFullscreen({navigationUI:'hide'}).then(()=>{try{screen.orientation.lock('landscape').catch(()=>{})}catch(x){}}).catch(()=>msg('Fullscreen yahan support nahi (iPhone: Share > Add to Home Screen)'))}}catch(x){}}
+$('fsb').onclick=()=>{togFS();$('bt').style.display='none'};
 $('nb').onclick=()=>build(seed=(seed*7+13)%9973);$('tb').onclick=e=>{th=(th+1)%3;e.target.textContent='🌲 Theme: '+TH[th].n;build(seed)};$('db').onclick=e=>{night=!night;e.target.textContent=night?'☀ Din Karo':'🌙 Raat Karo'};
 $('cb').onclick=e=>{cam3=!cam3;e.target.textContent='🎥 Camera: '+(cam3?'TPP':'FPP')};$('sh').onclick=e=>{sun.castShadow=!sun.castShadow;e.target.textContent='☀ Shadow: '+(sun.castShadow?'On':'Off')};
 $('bm').onpointerdown=()=>{if(!edit)use('G')};$('ml').onpointerdown=()=>{if(!edit)use('M')};$('md').onpointerdown=()=>{if(!edit)use('h')};$('pb').onpointerdown=()=>{if(!edit&&near)pick(near)};

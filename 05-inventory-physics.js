@@ -2,27 +2,33 @@
 function cap(t){return t==='a'?(P.bag?240:90):(P.bag?6:2)}
 function inv(){
   const el=$('iv');if(el.style.display!=='block')return;
-  const rw=(t,n,u)=>'<div><b>'+LN[t]+'</b> '+n+'<span>'+(u?'<button data-u="'+t+'">'+u+'</button>':'')+'<button data-d="'+t+'">Girao</button></span></div>';
-  el.innerHTML=rw('h',P.inv.h+'/'+cap('h'),'Use')+rw('G',P.inv.G+'/'+cap('G'),'Phenko')+rw('M',P.inv.M+'/'+cap('M'),'Phenko')+rw('a',P.res+'/'+cap('a'))+rw('W',P.gun?'Equipped':'-')+rw('Z',P.zoom?'Equipped':'-')+rw('H',P.helm?'Equipped':'-')+rw('B',P.bag?'Equipped':'-')+'<div style="border:0;justify-content:center"><button id="ic">Band Karo</button></div>';
+  const rw=(t,n,u)=>'<div><b>'+lootName(t)+'</b> '+n+'<span>'+(u?'<button data-u="'+t+'">'+u+'</button>':'')+'<button data-d="'+t+'">Girao</button></span></div>';
+  el.innerHTML=rw('h',P.inv.h+'/'+cap('h'),'Use')+rw('G',P.inv.G+'/'+cap('G'),'Phenko')+rw('M',P.inv.M+'/'+cap('M'),'Phenko')+rw('a',P.res+'/'+cap('a'))+rw('W',P.gun?'Equipped':'-')+rw('S',P.melee>=0?SWORDS[P.melee].name:'-')+rw('Z',P.zoom?'Equipped':'-')+rw('H',P.helm?'Equipped':'-')+rw('B',P.bag?'Equipped':'-')+'<div style="border:0;justify-content:center"><button id="ic">Band Karo</button></div>';
 }
 function pick(l){
   const t=l.t;
-  if(t==='W'){if(P.gun)return msg('M416 pehle se hai');P.gun=true}
+  if(t.length>1&&t.charAt(0)==='S'){if(!swordPick(+t.slice(1)))return}
+  else if(t==='W'){if(P.gun)return msg('M416 pehle se hai');P.gun=true}
   else if(t==='Z'){if(P.zoom)return msg('4x Scope pehle se hai');P.zoom=true}
   else if(t==='H'){if(P.helm)return msg('Helmet Lv.3 pehle se hai');P.helm=true}
   else if(t==='B'){if(P.bag)return msg('Backpack pehle se hai');P.bag=true}
   else if(t==='a'){if(P.res>=cap('a'))return msg('Ammo bag full');P.res=Math.min(cap('a'),P.res+30)}
   else{if(P.inv[t]>=cap(t))return msg('Bag full');P.inv[t]++}
-  snd(620,0.08,0.06,'sine');grp.remove(l.m);LT.splice(LT.indexOf(l),1);msg(LN[t]+' uthaya');inv();if(typeof netPick==='function')netPick(l.id);
+  snd(620,0.08,0.06,'sine');grp.remove(l.m);LT.splice(LT.indexOf(l),1);msg(lootName(t)+' uthaya');inv();if(typeof netPick==='function')netPick(l.id);
+}
+function spawnDrop(t){   // item zameen par (aur multiplayer me sab ko)
+  const lx=P.x-Math.sin(P.yaw)*1.8,ly=P.y+0.5,lz=P.z-Math.cos(P.yaw)*1.8,lid=typeof netNewLootId==='function'?netNewLootId():undefined;
+  addLoot(lx,ly,lz,t,lid);if(lid!==undefined&&typeof netLootDrop==='function')netLootDrop(lx,ly,lz,t,lid);
 }
 function drop(t){
-  if(t==='W'){if(!P.gun)return;P.gun=false}
+  if(t==='S'){t=swordDrop();if(!t)return}
+  else if(t==='W'){if(!P.gun)return;P.gun=false}
   else if(t==='Z'){if(!P.zoom)return;P.zoom=false;scope=false;$('sc').style.display='none'}
   else if(t==='H'){if(!P.helm)return;P.helm=false}
   else if(t==='B'){if(!P.bag)return;P.bag=false;for(const k of['h','G','M'])P.inv[k]=Math.min(P.inv[k],2);P.res=Math.min(P.res,90)}
   else if(t==='a'){if(P.res<30)return;P.res-=30}
   else{if(!P.inv[t])return;P.inv[t]--}
-  addLoot(P.x-Math.sin(P.yaw)*1.8,P.y+0.5,P.z-Math.cos(P.yaw)*1.8,t);inv();
+  spawnDrop(t);inv();
 }
 function use(t){
   if(P.dead)return;

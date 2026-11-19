@@ -15,6 +15,9 @@ function netShot(a,b,c){
 function netHurtRemote(id,a){const c=NET.conns[id];if(c&&c.open)c.send({t:'hurt',a})}
 function netPlayerHit(pid,a){if(NET.role==='host')pid==='host'?hurt(a):netHurtRemote(pid,a);else netToHost({t:'pdmg',to:pid,a})}
 function netDmg(e,a){netToHost({t:'dmg',n:e.nid,a})}
+let LDN=0;   // player ka girayah loot: unique id (host_1, p2_3 ...) taaki kisi se na takraye
+function netNewLootId(){return NET.role==='solo'?undefined:NET.myId+'_'+(++LDN)}
+function netLootDrop(x,y,z,t,id){const o={t:'ldrop',x:jr(x),y:jr(y),z:jr(z),lt:t,id};NET.role==='host'?netBc(o):netToHost(o)}
 function netPick(id){if(NET.role==='host')netBc({t:'pick',id});else if(NET.role==='client')netToHost({t:'pick',id})}
 function netEnemyKilled(e,lt,lid,by,rk){if(NET.role==='host')netBc({t:'ekill',n:e.nid,lt,lid,by,rk})}
 function netEnemySpawned(e){if(NET.role==='host'&&started)netBc({t:'espawn',n:e.nid,x:jr(e.x),y:jr(e.y),z:jr(e.z)})}
@@ -64,6 +67,7 @@ function hostRecv(id,m){
     case'dmg':{const e=EN.find(x=>x.nid===m.n);if(e)dmgEnemy(e,Math.min(300,m.a),id);break}
     case'pdmg':if(NET.mode==='pvp')netPlayerHit(m.to,m.a);break;
     case'pick':netPickRemote(m.id);netBc({t:'pick',id:m.id},id);break;
+    case'ldrop':addLoot(m.x,m.y,m.z,m.lt,m.id);netBc(m,id);break;
     case'shot':netTracer(m);netBc(m,id);break;
     case'wp':case'jump':if(typeof teamRecv==='function')teamRecv(id,m);netBc(m,id);break;
   }
@@ -108,6 +112,7 @@ function clientRecv(m){
     case'hurt':hurt(m.a);break;
     case'wp':case'jump':if(typeof teamRecv==='function')teamRecv(null,m);break;
     case'pick':netPickRemote(m.id);break;
+    case'ldrop':addLoot(m.x,m.y,m.z,m.lt,m.id);break;
     case'shot':netTracer(m);break;
   }
 }
@@ -119,7 +124,7 @@ function netEnemyStep(e,dt){   // client: bots ko host ke data se chalao
   const k=Math.min(1,dt*10);
   e.x+=(e.ntx-e.x)*k;e.y+=(e.nty-e.y)*k;e.z+=(e.ntz-e.z)*k;e.g.position.set(e.x,e.y,e.z);
   let d=e.nry-e.g.rotation.y;d=Math.atan2(Math.sin(d),Math.cos(d));e.g.rotation.y+=d*k;
-  const sp=e.nsp||0;e.wp=(e.wp||0)+sp*dt*2.4;const sw=Math.sin(e.wp)*0.7*Math.min(1,sp/3);e.c.l1.rotation.x=sw;e.c.l2.rotation.x=-sw;
+  const sp=e.nsp||0;e.wp=(e.wp||0)+sp*dt*2.4;walkCycle(e.c,e.wp,Math.min(1,sp/3),sp>5?1:0);
   if(e.gait)e.gait(sp);if(e.ik){e.g.updateMatrixWorld(true);e.ik()}
 }
 function netLeave(){
@@ -162,6 +167,7 @@ function avatarStep(r,dt){
   const sp=Math.hypot(r.ax-ox,r.az-oz)/Math.max(dt,1e-3),str=Math.min(1,sp/6);r.wph=(r.wph||0)+sp*dt*2.2;
   const g=r.av.g;g.visible=!r.dead&&!r.drv&&started;
   g.position.set(r.ax,r.ay+(r.stn===2?0.18:0),r.az);g.rotation.set(r.stn===2?-1.35:0,r.ayaw,0);g.scale.y=0.78*(r.stn===1?0.82:1);
-  const sw=Math.sin(r.wph)*0.8*str;r.av.l1.rotation.x=sw;r.av.l2.rotation.x=-sw;
-  r.av.rf.visible=!!r.gun&&r.sw<0;r.av.poseArms(!!r.gun&&r.sw<0,r.wph,str,false,r.pitch||0,0);
+  walkCycle(r.av,r.wph,str,0);
+  const hasSw=netAvatarSword(r,str,performance.now()/1000);
+  r.av.rf.visible=!!r.gun&&!hasSw;if(!hasSw){r.av.torso.rotation.set(0,0,0);r.av.pel.rotation.set(0,0,0);r.av.poseArms(!!r.gun,r.wph,str,false,r.pitch||0,0)}
 }

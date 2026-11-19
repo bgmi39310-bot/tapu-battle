@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Tapu Battle — BGMI Edition (Cinematic PBR)</title>
+<meta name="theme-color" content="#0b121a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,6 +17,7 @@
 <div id="vg"></div>
 <div id="sc"></div>
 <canvas id="mm" width="240" height="240"></canvas>
+<button id="mapBtn">&#128506; MAP</button>
 
 <div id="tophud">
   <div class="statpill">ALIVE <span id="alv">11</span></div>
@@ -21,6 +28,7 @@
 <button id="gb" title="Settings">&#9881;</button>
 <div id="bt">
   <button id="lobbyBtn">&#127968; Lobby</button>
+  <button id="fsb">&#9974; Fullscreen</button>
   <button id="nb">&#128506; Naya Map</button>
   <button id="tb">&#127794; Theme: Erangel</button>
   <button id="db">&#127769; Raat Karo</button>
@@ -199,6 +207,8 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
 <script src="09b-models.js"></script>
+<script src="09h-swords.js"></script>
+<script src="09i-anim.js"></script>
 <script src="09c-melee.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="09e-net.js"></script>

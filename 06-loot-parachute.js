@@ -1,10 +1,13 @@
 // Loot, drop/parachute, climbing
+const LMC={};
 function lootMesh(t){
   const g=new THREE.Group();
-  const M=(c,o)=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:0.6,metalness:0.3},o||{}));
+  const M=(c,o)=>{const k=c+JSON.stringify(o||{});return LMC[k]||(LMC[k]=new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:0.6,metalness:0.3},o||{})))};
   const B=(w,h,d,c,x,y,z)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),M(c));m.position.set(x,y,z);g.add(m);return m};
   const C=(a,b,h,c,x,y,z,s)=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(a,b,h,s||12),M(c));m.position.set(x,y,z);g.add(m);return m};
-  if(t==='h'){B(.6,.4,.32,0xf5f5f5,0,0,0);B(.36,.1,.33,0xe53935,0,0,0);B(.1,.36,.33,0xe53935,0,0,0)}
+  const isS=t.length>1&&t.charAt(0)==='S';
+  if(isS){const i=+t.slice(1),so=swordObj(i,0.75,false),L=swordParts(i).top*0.75;so.rotation.z=Math.PI/2;so.position.set(L/2-0.1,0.16,0);g.add(so)}
+  else if(t==='h'){B(.6,.4,.32,0xf5f5f5,0,0,0);B(.36,.1,.33,0xe53935,0,0,0);B(.1,.36,.33,0xe53935,0,0,0)}
   else if(t==='a'){B(.55,.32,.35,0x3d4b26,0,0,0);for(let i=0;i<4;i++)C(.045,.045,.2,0xd4a017,-.2+i*.13,.26,0)}
   else if(t==='H'){g.add(new THREE.Mesh(new THREE.SphereGeometry(.34,14,10,0,6.3,0,1.65),M(0x2c3e50,{metalness:0.5})));B(.34,.12,.08,0x111111,0,.08,-.32)}
   else if(t==='B'){B(.5,.6,.28,0x3d4935,0,0,0);B(.4,.25,.12,0x263020,0,-.12,.2);B(.07,.55,.05,0x111111,-.18,0,.16);B(.07,.55,.05,0x111111,.18,0,.16)}
@@ -12,7 +15,7 @@ function lootMesh(t){
   else if(t==='M'){C(.12,.12,.4,0x2e7d32,0,0,0).material=M(0x2e7d32,{transparent:true,opacity:.75});C(.04,.05,.18,0x2e7d32,0,.28,0);const f=new THREE.Mesh(new THREE.ConeGeometry(.07,.2,8),new THREE.MeshBasicMaterial({color:0xff6f00}));f.position.y=.5;g.add(f)}
   else if(t==='W'){B(.1,.14,1,0x1f2226,0,0,0);B(.1,.2,.3,0x7c6a52,0,-.04,.6);B(.08,.25,.1,0x7c6a52,0,-.2,-.05);C(.024,.024,.52,0x111111,0,.02,-.7).rotation.x=Math.PI/2}
   else{C(.06,.06,.5,0x1a1d20,0,0,0).rotation.z=Math.PI/2;C(.095,.095,.1,0x37474f,.25,0,0).rotation.z=Math.PI/2;C(.095,.095,.1,0x37474f,-.25,0,0).rotation.z=Math.PI/2}
-  const ring=new THREE.Mesh(new THREE.RingGeometry(.32,.42,20),new THREE.MeshBasicMaterial({color:0xffca28,side:THREE.DoubleSide,transparent:true,opacity:0.65}));
+  const ring=new THREE.Mesh(new THREE.RingGeometry(isS?.55:.32,isS?.68:.42,24),new THREE.MeshBasicMaterial({color:isS?0x4dd0e1:0xffca28,side:THREE.DoubleSide,transparent:true,opacity:0.65}));
   ring.rotation.x=-Math.PI/2;ring.position.y=-0.25;g.add(ring);g.scale.setScalar(1.55);return g;
 }
 let LID=0;

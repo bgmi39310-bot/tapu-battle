@@ -90,7 +90,8 @@ function uiNet(){
   }
   renderLobby();syncLobbyMates();
 }
-function startGame(){started=true;document.getElementById('lobby').style.display='none';LB.mates.forEach(m=>m.c.g.visible=false);msg('Plane se kudne ke liye KUDO dabao')}
+function startGame(){try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)document.documentElement.requestFullscreen({navigationUI:'hide'}).then(()=>{try{screen.orientation.lock('landscape').catch(()=>{})}catch(x){}}).catch(()=>{})}catch(x){}
+  started=true;document.getElementById('lobby').style.display='none';LB.mates.forEach(m=>m.c.g.visible=false);msg('Plane se kudne ke liye KUDO dabao')}
 function openLobby(){started=false;document.getElementById('lobby').style.display='flex';uiNet()}
 const needNet=()=>{if(typeof netHost!=='function'){msg('09e-net.js load nahi hua - repo me upload karo');return false}return true};
 on('lbSeed',()=>{if(isClient())return;build(seed=(seed*7+13)%9973);renderLobby();if(typeof netMapChanged==='function')netMapChanged()});

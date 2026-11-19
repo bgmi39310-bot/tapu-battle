@@ -13,13 +13,17 @@ function mkNoise(r){
 function col(o,rad,h=1.55){
   const oy=o.y||0,botY=oy+0.66,topY=oy+h;   // 0.66 = dehleej/chhote step par apne aap chadh jao
   for(let iter=0;iter<2;iter++){
-    for(const[a,b,r,hq,sf]of OB){
-      if(sf)continue;
-      const gy=hmap(a,b);if(botY>=gy+(hq||3)||topY<=gy-0.5)continue;
-      const dx=o.x-a,dz=o.z-b,d=Math.hypot(dx,dz),m=r+rad;
-      if(d<m&&d>1e-5){o.x=a+dx/d*m;o.z=b+dz/d*m}
+    for(let i=0,n=OB.length;i<n;i++){
+      const q=OB[i];if(q[4])continue;
+      const m=q[2]+rad,dx=o.x-q[0],dz=o.z-q[1];
+      if(dx>m||dx<-m||dz>m||dz<-m)continue;            // door wali cheezon ke liye hmap() bilkul nahi bulana
+      if(q[5]===undefined)q[5]=hmap(q[0],q[1]);        // zameen ki unchai build me ek baar cache hoti hai
+      const gy=q[5];if(botY>=gy+(q[3]||3)||topY<=gy-0.5)continue;
+      const d=Math.hypot(dx,dz);
+      if(d<m&&d>1e-5){o.x=q[0]+dx/d*m;o.z=q[1]+dz/d*m}
     }
     for(const[a,b,c,e,my,tp]of BX){
+      if(o.x<a-rad||o.x>c+rad||o.z<b-rad||o.z>e+rad)continue;   // door ke box skip
       const bMinY=(my!==undefined&&my!==0)?my:-999,bMaxY=(tp!==undefined&&tp!==0)?tp:999;
       if(topY<=bMinY+0.05||botY>=bMaxY-0.05)continue;
       const px=Math.max(a,Math.min(o.x,c)),pz=Math.max(b,Math.min(o.z,e)),dx=o.x-px,dz=o.z-pz,d=Math.hypot(dx,dz);
@@ -46,7 +50,7 @@ function moveWithSubsteps(o,dx,dz,rad,h){
 
 function snd(f,d,v,type='sawtooth'){
   try{
-    ac=ac||new(window.AudioContext||window.webkitAudioContext)();
+    ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();
     const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime;
     o.type=type;o.frequency.value=f;g.gain.value=v;
     o.connect(g);g.connect(ac.destination);
@@ -56,9 +60,11 @@ function snd(f,d,v,type='sawtooth'){
 }
 
 function msg(t){$('ms').textContent=t;$('ms').style.opacity=1;clearTimeout(msg.t);msg.t=setTimeout(()=>$('ms').style.opacity=0,2400)}
-function tracer(a,b,c){const g=new THREE.BufferGeometry().setFromPoints([a,b]),l=new THREE.Line(g,new THREE.LineBasicMaterial({color:c}));scene.add(l);setTimeout(()=>{scene.remove(l);g.dispose()},75)}
+const TRMAT={};
+function tracer(a,b,c){const g=new THREE.BufferGeometry().setFromPoints([a,b]),l=new THREE.Line(g,TRMAT[c]||(TRMAT[c]=new THREE.LineBasicMaterial({color:c})));scene.add(l);setTimeout(()=>{scene.remove(l);g.dispose()},75)}
 
-const LN={h:'Medkit',a:'5.56mm Ammo',H:'Helmet Lv.3',B:'Backpack Lv.2',G:'Frag Grenade',M:'Molotov',W:'M416 Rifle',Z:'4x Scope'};
+const LN={h:'Medkit',a:'5.56mm Ammo',H:'Helmet Lv.3',B:'Backpack Lv.2',G:'Frag Grenade',M:'Molotov',W:'M416 Rifle',Z:'4x Scope',S:'Talwar'};
+function lootName(t){return t.length>1&&t.charAt(0)==='S'&&SWORDS[+t.slice(1)]?SWORDS[+t.slice(1)].name+' (Talwar)':LN[t]}
 let NID=0;
 function spawnEn(){
   const e={nid:NID++,g:null,x:0,z:0,y:0,hp:100,cd:1,lt:0,see:false,tx:0,tz:0,wt:0,ph:0};let t=0;
@@ -78,7 +84,7 @@ function dmgEnemy(e,a,by='host',rk=false){
 function kill(e,roadkill=false,by='host'){
   const idx=EN.indexOf(e);if(idx===-1)return;
   scene.remove(e.g);EN.splice(idx,1);if(by==='host')P.kills++;
-  const lt=['h','a','H','B','G','M','h','a','W','Z','a'][Math.floor(Math.random()*11)],lo=addLoot(e.x,e.y+0.55,e.z,lt);
+  const lt=Math.random()<0.12?'S'+Math.floor(Math.random()*SWORDS.length):['h','a','H','B','G','M','h','a','W','Z','a'][Math.floor(Math.random()*11)],lo=addLoot(e.x,e.y+0.55,e.z,lt);
   if(by==='host')msg((roadkill?'Gaadi se kuchal diya! ':'Dushman khatam! ')+'Kills: '+P.kills);
   if(typeof netEnemyKilled==='function')netEnemyKilled(e,lt,lo.id,by,roadkill);
   setTimeout(()=>{if(EN.length<10&&NET.role!=='client')spawnEn()},7500);
@@ -90,6 +96,7 @@ function hurt(a){
     P.dead=true;P.hp=0;drive=false;setDriveUI(false);msg('Aap शहीद ho gaye! 4 sec me dobara drop...');
     setTimeout(()=>{
       P.hp=100;P.ammo=30;P.res=90;P.dead=false;
+      held=null;reload=0;firing=false;st=0;leanT=0;scope=false;$('sc').style.display='none';if(typeof setSword==='function'){setSword(-1);P.melee=-1}
       P.inv={h:0,G:0,M:0};P.helm=P.bag=false;P.gun=P.zoom=false;
       P.x=sp0.x;P.z=sp0.z;startDrop();
     },4000);

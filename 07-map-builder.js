@@ -1,6 +1,8 @@
 // Procedural map: terrain, houses, trees, props
+const MATC={};   // material cache: same rang+texture wale sab mesh ek hi material share karte hain
+function matFor(col,tex,rM,mM){const k=(col&&col.isColor?col.getHex():col)+'|'+(tex?tex.uuid:0)+'|'+rM+'|'+mM;return MATC[k]||(MATC[k]=new THREE.MeshStandardMaterial({color:col,map:tex,bumpMap:tex,bumpScale:0.04,roughness:rM,metalness:mM}))}
 function build(sd){
-  if(grp)scene.remove(grp);grp=new THREE.Group();scene.add(grp);
+  if(grp){grp.traverse(o=>{if(o.geometry&&o.geometry!==UB)o.geometry.dispose()});scene.remove(grp)}grp=new THREE.Group();scene.add(grp);
   PJ.forEach(p=>scene.remove(p.m));FZ.forEach(f=>scene.remove(f.m));FX.forEach(f=>scene.remove(f.m));
   OB.length=BX.length=WM.length=LT.length=HS.length=PJ.length=FZ.length=FX.length=FL.length=RP.length=WIN.length=0;
   EN.forEach(e=>scene.remove(e.g));EN.length=0;
@@ -70,7 +72,7 @@ function build(sd){
   scat(new THREE.DodecahedronGeometry(1,0),0x757873,400,.8,true);scat(new THREE.IcosahedronGeometry(1,0),tc2.tr,680,.65,'b');
 
   const bx=(x,y,z,w,h,d,col,sol,tex=null,minY=0,topY=0,rM=0.9,mM=0.1)=>{
-    const b=new THREE.Mesh(UB,new THREE.MeshStandardMaterial({color:col,map:tex,bumpMap:tex,bumpScale:0.04,roughness:rM,metalness:mM}));
+    const b=new THREE.Mesh(UB,matFor(col,tex,rM,mM));
     b.scale.set(w,h,d);b.position.set(x,y,z);b.castShadow=b.receiveShadow=true;grp.add(b);WM.push(b);
     const tY=topY||(y+h/2);
     if(sol===2){BX.push([x-w/2,z-d/2,x+w/2,z+d/2,minY,tY]);FL.push([x-w/2,z-d/2,x+w/2,z+d/2,tY])}
@@ -152,7 +154,7 @@ function build(sd){
     const p4=bx(cx+W/2+0.4,pY,cz,0.35,pH,D+0.5,w,2,TEX.wall,roofTopY,roofTopY+pH);
 
     addLoot(cx-2,roofTopY+0.55,cz,'W');addLoot(cx+2,roofTopY+0.55,cz,big?'H':'Z');addLoot(cx,roofTopY+0.55,cz-2,'a');
-    HS.push({x:cx,z:cz,W,D,top:roofTopY,roofTopY,roof:[roofSlab,p1,p2,p3,p4]});
+    HS.push({x:cx,z:cz,W,D,top:roofTopY,roofTopY,g0,roof:[roofSlab,p1,p2,p3,p4]});
     bx(cx,g0+0.04,cz,W,0.12,D,0x857b6d,0,TEX.roof);
     for(let i=0;i<2;i++)addLoot(cx+(r()-.5)*(W-3),g0+0.5,cz+(r()-.5)*(D-3),LK[Math.floor(r()*LK.length)]);
   };
@@ -174,6 +176,15 @@ function build(sd){
     }
   }
 
+  // 10 talwarein: har ek alag ghar me (kabhi andar, kabhi chhat par). r() ke order se: sab players ko ek jaisa map milta hai
+  if(HS.length){
+    const ord=HS.map((_,i)=>i);for(let i=ord.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[ord[i],ord[j]]=[ord[j],ord[i]]}
+    for(let i=0;i<SWORDS.length;i++){
+      const h=HS[ord[i%ord.length]],onRoof=i%2===1,x=h.x+(r()-.5)*(h.W-4),z=h.z+(r()-.5)*(h.D-4);
+      addLoot(x,(onRoof?h.roofTopY:h.g0)+0.45,z,'S'+i);
+    }
+  }
+  for(const q of OB){q[4]=q[4]||0;q[5]=hmap(q[0],q[1])}   // collision ke liye zameen ki unchai ek baar nikaal lo
   const o=document.createElement('canvas');o.width=o.height=240;const ox=o.getContext('2d');
   for(let a=0;a<240;a++)for(let b=0;b<240;b++){
     const X=(a/240-.5)*S,Z=(b/240-.5)*S,y=H(X,Z);
@@ -184,7 +195,7 @@ function build(sd){
 
   sp0={x:V[0][0],z:V[0][1]};
   P.x=sp0.x;P.z=sp0.z;P.y=H(P.x,P.z);P.vy=0;P.hp=100;P.ammo=30;P.res=90;P.kills=0;P.dead=false;
-  P.inv={h:1,G:1,M:1};P.helm=P.bag=false;P.gun=P.zoom=false;
+  P.inv={h:1,G:1,M:1};P.helm=P.bag=false;P.gun=P.zoom=false;P.melee=-1;if(typeof setSword==='function')setSword(-1);
   J.x=sp0.x+9;J.z=sp0.z+6;J.a=0;J.v=0;J.st=0;J.y=Math.max(H(J.x,J.z),0)+0.1;drive=false;skyD=tc2.sky;
   jp.position.set(J.x,J.y,J.z);jp.rotation.set(0,0,0);$('vbl').textContent='Gaadi';
   for(let i=0;i<10;i++)spawnEn();
