@@ -57,7 +57,7 @@ function step(dt){
   $('jb2').classList.toggle('climb-ready',!!ct);$('jbl').textContent=phase?'Kudo':(ct?'Chadho':'Kudo');
   spr=false;
   if(P.dead){jmpReq=false}
-  else if(phase){air(dt,fx,fy)}
+  else if(phase){const ss=typeof squadSteer==='function'?squadSteer(dt):null;if(ss)air(dt,ss.fx,ss.fy);else air(dt,fx,fy)}
   else if(drive){
     jmpReq=false;
     const acc=clamp(DRV.g-DRV.b-ky,-1,1),str=clamp(DRV.r-DRV.l+kx,-1,1),br=(acc>0&&J.v<-0.5)||(acc<0&&J.v>0.5);
@@ -175,6 +175,7 @@ function step(dt){
   $('alv').textContent=EN.length+1+netAlive();$('klc').textContent=P.kills;
   const hdg=((-P.yaw*180/Math.PI)%360+360)%360;$('cp').innerHTML=DIRS[Math.round(hdg/45)%8]+' '+Math.round(hdg)+'&deg;';
   prev();
+  if(typeof teamUpdate==='function')teamUpdate(dt);
   // minimap
   if(mm._bg){
     const k=3,px=(P.x/S+.5)*240,pz=(P.z/S+.5)*240;
