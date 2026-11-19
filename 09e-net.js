@@ -65,6 +65,7 @@ function hostRecv(id,m){
     case'pdmg':if(NET.mode==='pvp')netPlayerHit(m.to,m.a);break;
     case'pick':netPickRemote(m.id);netBc({t:'pick',id:m.id},id);break;
     case'shot':netTracer(m);netBc(m,id);break;
+    case'wp':case'jump':if(typeof teamRecv==='function')teamRecv(id,m);netBc(m,id);break;
   }
 }
 
@@ -90,6 +91,7 @@ function clientRecv(m){
     case'start':startGame();break;
     case'full':msg('Room full hai ya game shuru ho chuka hai');netLeave();break;
     case'snap':{
+      NET.lastSnap=performance.now();
       for(const a of m.pl){
         if(a[0]===NET.myId)continue;
         let r=NET.players[a[0]];if(!r){const nm=(NET.roster.find(q=>q[0]===a[0])||[0,'Player'])[1];r=NET.players[a[0]]={id:a[0],name:nm,av:null}}
@@ -104,6 +106,7 @@ function clientRecv(m){
       break}
     case'espawn':{spawnEn();const e=EN[EN.length-1];e.nid=m.n;e.x=e.ntx=m.x;e.y=e.nty=m.y;e.z=e.ntz=m.z;e.g.position.set(m.x,m.y,m.z);break}
     case'hurt':hurt(m.a);break;
+    case'wp':case'jump':if(typeof teamRecv==='function')teamRecv(null,m);break;
     case'pick':netPickRemote(m.id);break;
     case'shot':netTracer(m);break;
   }
@@ -130,14 +133,14 @@ function netLeave(){
 
 // ---------- har frame ----------
 function snapPlayers(){
-  const a=[['host',jr(P.x),jr(P.y),jr(P.z),jr(P.yaw),st,P.gun?1:0,P.sw,Math.round(P.hp),P.dead?1:0,drive?1:0,jr(P.pitch),phase?1:0]];
+  const a=[['host',jr(P.x),jr(P.y),jr(P.z),jr(P.yaw),st,P.gun?1:0,P.sw,Math.round(P.hp),P.dead?1:0,drive?1:0,jr(P.pitch),phase]];
   for(const id in NET.players){const r=NET.players[id];a.push([id,jr(r.x),jr(r.y),jr(r.z),jr(r.yaw),r.stn,r.gun,r.sw,Math.round(r.hp),r.dead,r.drv,jr(r.pitch),r.ph])}
   return a;
 }
 function netFrame(dt){
   if(NET.role==='solo')return;
   NET.tSt-=dt;NET.tSn-=dt;
-  if(NET.role==='client'&&NET.tSt<=0){NET.tSt=0.066;netToHost({t:'st',x:jr(P.x),y:jr(P.y),z:jr(P.z),yaw:jr(P.yaw),pitch:jr(P.pitch),stn:st,gun:P.gun?1:0,sw:P.sw,hp:Math.round(P.hp),dead:P.dead?1:0,drv:drive?1:0,ph:phase?1:0})}
+  if(NET.role==='client'&&NET.tSt<=0){NET.tSt=0.066;netToHost({t:'st',x:jr(P.x),y:jr(P.y),z:jr(P.z),yaw:jr(P.yaw),pitch:jr(P.pitch),stn:st,gun:P.gun?1:0,sw:P.sw,hp:Math.round(P.hp),dead:P.dead?1:0,drv:drive?1:0,ph:phase})}
   if(NET.role==='host'&&NET.tSn<=0){NET.tSn=0.08;netBc({t:'snap',pl:snapPlayers(),en:EN.map(e=>[e.nid,jr(e.x),jr(e.y),jr(e.z),jr(e.g.rotation.y),jr(e.spd||0)])})}
   for(const id in NET.players)avatarStep(NET.players[id],dt);
 }
