@@ -11,9 +11,9 @@ const on=(id,fn)=>{const el=document.getElementById(id);if(el)el.onclick=fn};
   const old=document.getElementById('lobby');if(old)old.remove();
   const st=document.createElement('style');
   st.textContent=`
-#lobby{position:fixed;inset:0;z-index:200;display:flex;align-items:center;padding:0 4vw;overflow:auto;
+#lobby{position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;display:flex;align-items:flex-start;padding:0 4vw;overflow:auto;
   background:linear-gradient(90deg,rgba(6,12,20,.94) 0%,rgba(6,12,20,.72) 42%,rgba(6,12,20,0) 78%);color:#fff;font-family:system-ui,sans-serif;touch-action:pan-y;pointer-events:auto}
-#lobby .lbcard{width:min(430px,92vw);padding:14px 0}
+#lobby .lbcard{width:min(430px,92vw);padding:14px 0;margin:auto 0}
 #lobby h1{margin:0;font-size:32px;letter-spacing:1px;color:#ffd54f;text-shadow:0 2px 8px #000}
 #lobby .lbsub{margin:2px 0 10px;color:#cfd8dc;font-weight:700;letter-spacing:3px;font-size:12px}
 #lobby h3{margin:12px 0 6px;font-size:12px;color:#ffcc80;text-transform:uppercase;letter-spacing:1.5px}
@@ -28,7 +28,8 @@ const on=(id,fn)=>{const el=document.getElementById(id);if(el)el.onclick=fn};
 #lobby .lbcode{font-size:26px;color:#ffd54f;letter-spacing:4px}
 #lobby #lbStart{margin-top:14px;width:100%;padding:16px;border-radius:14px;border:3px solid #ffd54f;background:linear-gradient(#ff5252,#c62828);color:#fff;font-size:22px;font-weight:900;letter-spacing:2px;box-shadow:0 0 18px rgba(255,82,82,.55);cursor:pointer}
 #lobby #lbStart:disabled{opacity:.6;filter:grayscale(.5)}
-#lobby #lbDiag{margin-top:8px;font-size:11px;color:#ffab91}`;
+#lobby #lbDiag{margin-top:8px;font-size:11px;color:#ffab91}
+@media (max-height:600px){#lobby h1{font-size:22px}#lobby .lbsub{margin:0 0 4px}#lobby h3{margin:7px 0 4px}#lobby .lbm,#lobby .lbt{padding:7px 10px;font-size:13px}#lobby #lbStart{padding:10px;font-size:18px;margin-top:8px}#lobby #lbCode{padding:7px;font-size:15px}#lobby .lbcard{padding:6px 0}}`;
   document.head.appendChild(st);
   const d=document.createElement('div');d.id='lobby';
   d.innerHTML=`<div class="lbcard">
@@ -83,7 +84,7 @@ function uiNet(){
   const n=NETX(),el=document.getElementById('lbRoomInfo'),s=document.getElementById('lbStart'),h=document.getElementById('lbHost');if(!el)return;
   if(n.role==='solo'){el.innerHTML='';s.textContent='\u25B6 START';s.disabled=false;h.textContent='\u2795 Room banao'}
   else{
-    el.innerHTML='Room code: <b class="lbcode">'+n.code+'</b><br>Players ('+(n.roster||[]).length+'/4): '+(n.roster||[]).map(r=>r[1]).join(', ');
+    el.innerHTML='Room code: <b class="lbcode">'+n.code+'</b><br><span style="font-size:12px;color:#ffcc80">'+(n.role==='host'?'Dost ye code "ROOM CODE" me likhkar Join dabaye':'Host ke START ka intezaar')+'</span><br>Players ('+(n.roster||[]).length+'/4): '+(n.roster||[]).map(r=>r[1]).join(', ');
     if(n.role==='client'){s.textContent='Host ke START ka intezaar...';s.disabled=true;h.textContent='\u2716 Room chhodo'}
     else{s.textContent='\u25B6 START ('+(n.roster||[]).length+' player)';s.disabled=false;h.textContent='\u2716 Room band karo'}
   }
@@ -98,7 +99,10 @@ on('lbNight',()=>{if(isClient())return;night=true;renderLobby();if(typeof netMap
 on('lbMode',()=>{if(isClient()||!needNet())return;NET.mode=NET.mode==='pvp'?'coop':'pvp';renderLobby();netMapChanged()});
 on('lbHost',()=>{if(!needNet())return;NET.role==='solo'?netHost():netLeave()});
 on('lbJoin',()=>{if(needNet())netJoin(document.getElementById('lbCode').value)});
-on('lbStart',()=>{if(isClient())return;if(NETX().role==='host')netStartAll();startGame()});
+on('lbStart',()=>{
+  if(isClient())return;const n=NETX();
+  if(n.role==='host'&&(n.roster||[]).length<2&&!LB.warned){LB.warned=true;msg('Abhi koi dost join nahi hua! Dobara START dabao = akele shuru');setTimeout(()=>LB.warned=false,4000);return}
+  if(n.role==='host')netStartAll();startGame()});
 on('lobbyBtn',()=>{const bt=document.getElementById('bt');if(bt)bt.style.display='none';if(typeof netLeave==='function')netLeave();openLobby()});
 addEventListener('load',()=>{
   renderLobby();uiNet();
