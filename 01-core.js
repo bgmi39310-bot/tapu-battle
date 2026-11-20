@@ -2,7 +2,8 @@
 const $=id=>document.getElementById(id),cv=$('g'),mm=$('mm'),mx=mm.getContext('2d');
 
 // 1. WebGL Renderer & Scene Setup (ACES Filmic ToneMapping & Soft Shadows for PBR Look)
-const ren=new THREE.WebGLRenderer({canvas:cv,antialias:true,powerPreference:'high-performance'});
+const MOBILE=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent||'')||((navigator.maxTouchPoints||0)>1&&window.innerWidth<1100);
+const ren=new THREE.WebGLRenderer({canvas:cv,antialias:!MOBILE,powerPreference:'high-performance'});
 ren.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
 ren.setSize(window.innerWidth,window.innerHeight,false);
 ren.setClearColor(0x7ec0ee,1);

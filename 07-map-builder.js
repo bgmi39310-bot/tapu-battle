@@ -86,7 +86,7 @@ function build(sd){
     for(let ix=-2;ix<=2;ix++){for(let iz=-2;iz<=2;iz++){const ty=H(cx+ix*(W*0.28),cz+iz*(D*0.28));if(ty>maxT)maxT=ty;if(ty<minT)minT=ty;}}
     if(maxT-minT>1.8)return;   // dhalaan wali jagah par ghar nahi (unche chabutre se bachne ke liye)
     const g0=maxT+0.15,roofTopY=g0+hh+0.45;
-    const w=new THREE.Color().setHSL(0.08+r()*0.08,0.25,0.78),yy=g0+hh/2,sw=(W-dw)/2;
+    const w=new THREE.Color().setHSL(0.08+Math.floor(r()*6)/6*0.08,0.25,0.78),yy=g0+hh/2,sw=(W-dw)/2;
 
     const fndH=Math.max(8,g0-minT+3);
     bx(cx,g0-fndH/2,cz,W+0.8,fndH,D+0.8,0x736f68,1,TEX.wall,minT-4,g0+0.08);
@@ -184,6 +184,7 @@ function build(sd){
       addLoot(x,(onRoof?h.roofTopY:h.g0)+0.45,z,'S'+i);
     }
   }
+  if(typeof batchStatic==='function')batchStatic();   // ~900 meshes -> material ke hisaab se kuch dozen
   for(const q of OB){q[4]=q[4]||0;q[5]=hmap(q[0],q[1])}   // collision ke liye zameen ki unchai ek baar nikaal lo
   const o=document.createElement('canvas');o.width=o.height=240;const ox=o.getContext('2d');
   for(let a=0;a<240;a++)for(let b=0;b<240;b++){

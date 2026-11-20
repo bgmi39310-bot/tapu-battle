@@ -52,7 +52,12 @@ Scripts classic `<script>` hain aur `index.html` ke order me chalti hain.
 - FIRE dabate raho: tirchha vaar, phir seedha vaar, baari-baari (BGMI jaisa combo).
 - Har talwar ki taakat/raftaar/pahunch alag hai (`09h-swords.js` me `def(name,dmg,dur,reach,...)`).
 
-## Performance notes
-- `col()` ab pehle distance dekhta hai, tabhi `hmap()` bulata hai (pehle har frame ~1800 baar bulata tha).
-- Map ke materials share hote hain (`matFor`, `lootMesh`), purani geometry `build()` me free hoti hai.
-- Door ka loot (>120m) chhupa rehta hai.
+## Graphics / Performance
+- **Settings (⚙) → 🎨 Graphics:** Auto (khud FPS dekhkar Low/Med/High badalta hai) ya Low / Med / High haath se. **📈 FPS** on karo to FPS, preset aur *draw calls* dikhte hain. Choice yaad rehti hai.
+- **Static batching (`09j-perf.js`):** map ke ~900 box meshes material ke hisaab se ~20 meshes me jud jate hain (draw calls ~2000 → ~300). Asli meshes sirf raycast ke liye `WM` me rehti hain (dikhti nahi).
+- **Raycast grid:** camera/LOS/goli ke ray ab sirf apne raaste ke cells ki meshes se takrate hain (~900 ki jagah ~13).
+- `col()` pehle distance dekhta hai tabhi `hmap()` bulata hai; materials share hote hain; HUD sirf badalne par DOM likhta hai; minimap 20 fps; sun ke shadow texel-grid par snap hote hain (jhilmilana band).
+- Loot 80m se door chhupa rehta hai. Phone par antialias band (pixel-ratio 1.5 se kaam chalta hai).
+
+## Tests (optional, sirf developer ke liye)
+`tests/` folder me Node scripts hain (browser/three.js ki zaroorat nahi): `node tests/batchtest.js` (batching + raycast grid), `node tests/swordtest.js` (talwar loot), `node tests/fullrun.js` (poora game 13 scenarios + auto-quality). Ye game ko affect nahi karte, delete bhi kar sakte ho.
